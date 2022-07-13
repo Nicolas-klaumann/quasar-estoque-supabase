@@ -38,6 +38,7 @@
         />
       </q-list>
     </q-drawer>
+    <q-page-container> <router-view /> </q-page-container>
   </q-layout>
 </template>
 
@@ -55,18 +56,6 @@ const linksList = [
     caption: '',
     icon: 'mdi-shape-outline',
     routeName: 'category'
-  },
-  {
-    title: 'Product',
-    caption: '',
-    icon: 'mdi-archive',
-    routeName: 'product'
-  },
-  {
-    title: 'Config',
-    caption: '',
-    icon: 'mdi-cog',
-    routeName: 'form-config'
   }
 ]
 import { defineComponent, ref } from 'vue'
