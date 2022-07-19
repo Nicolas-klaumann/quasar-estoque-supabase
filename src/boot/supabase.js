@@ -11,7 +11,6 @@ supabase.auth.onAuthStateChange((event, session) => {
   user.value = session?.user || null
 })
 
-console.log('init supabase:', supabase)
 export default function useSupabase () {
   return { supabase }
 }
