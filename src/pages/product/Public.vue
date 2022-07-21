@@ -1,14 +1,34 @@
 <template>
   <q-page padding>
+    <div class="row" v-if="brand.row">
+      <div class="col-12 text-center text-h4">
+        {{ brand.name }}
+      </div>
+    </div>
     <div class="row">
+      <q-select
+        outlined
+        v-model="categoryId"
+        :options="optionsCategories"
+        label="Category"
+        option-label="name"
+        option-value="id"
+        map-options="id"
+        emit-value
+        class="col-12"
+        dense
+        @update:model-value="handleListProducts(route.params.id)"
+      />
       <q-table
         :rows="products"
         :columns="columnsProduct"
+        v-model:pagination="initialPagination"
         row-key="id"
         class="col-12"
         :loading="loading"
         :filter="filter"
         grid
+        hide-pagination
       >
         <template v-slot:top>
           <span class="text-h6"> Product </span>
@@ -41,8 +61,25 @@
               </q-card-section>
             </q-card>
           </div>
+          <div class="col-12" v-if="props.rowIndex === 2 && brand.paralax_url">
+            <q-parallax :height="200" :speed="0.5">
+              <template v-slot:media>
+                <img :src="brand.paralax_url" />
+              </template>
+
+              <h3 class="text-white">Store Name</h3>
+            </q-parallax>
+          </div>
         </template>
       </q-table>
+    </div>
+    <div class="row justify-center">
+      <q-pagination
+        v-model="initialPagination.page"
+        :max="pagesNumber"
+        direction-links
+        @update:model-value="handleScrollToTop"
+      />
     </div>
     <dialog-product-details
       :show="showDialogDetails"
@@ -54,11 +91,11 @@
 
 <script>
 
-import { defineComponent, ref, onMounted } from 'vue'
+import { defineComponent, ref, onMounted, computed } from 'vue'
 import useApi from 'src/composables/UseApi'
 import useNotify from 'src/composables/UseNotify'
 import { useRoute } from 'vue-router'
-import { columnsProduct } from './table'
+import { columnsProduct, initialPagination } from './table'
 import { formatCurrency } from 'src/utils/format'
 import DialogProductDetails from 'components/DialogProductDetails.vue'
 
@@ -74,15 +111,17 @@ export default defineComponent({
     const table = 'product'
     const showDialogDetails = ref(false)
     const productDetails = ref({})
+    const optionsCategories = ref([])
+    const categoryId = ref('')
 
-    const { listPublic } = useApi()
+    const { listPublic, brand } = useApi()
     const { notifyError } = useNotify()
     const route = useRoute()
 
     const handleListProducts = async (userId) => {
       try {
         loading.value = true
-        products.value = await listPublic(table, userId)
+        products.value = categoryId.value ? await listPublic(table, userId, 'category_id', categoryId.value) : await listPublic(table, userId)
         loading.value = false
       } catch (error) {
         notifyError(error.message)
@@ -94,9 +133,18 @@ export default defineComponent({
       showDialogDetails.value = true
     }
 
+    const handleListCategories = async (userId) => {
+      optionsCategories.value = await listPublic('category', userId)
+    }
+
+    const handleScrollToTop = () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+
     onMounted(() => {
       if (route.params.id) {
         console.log('entrou')
+        handleListCategories(route.params.id)
         handleListProducts(route.params.id)
       }
     })
@@ -109,7 +157,15 @@ export default defineComponent({
       formatCurrency,
       showDialogDetails,
       productDetails,
-      handleShowDetails
+      handleShowDetails,
+      handleListProducts,
+      brand,
+      optionsCategories,
+      categoryId,
+      route,
+      initialPagination,
+      handleScrollToTop,
+      pagesNumber: computed(() => Math.ceil(products.value.length / initialPagination.value.rowsPerPage))
     }
   }
 })
