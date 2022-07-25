@@ -1,7 +1,7 @@
 import useSupabase from 'src/boot/supabase'
 import useAuthUser from './UseAuthUser'
 import { v4 as uuidv4 } from 'uuid'
-import { useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import useBrand from 'src/composables/UseBrand'
 import { ref } from 'vue'
 import { useQuasar } from 'quasar'
@@ -17,7 +17,7 @@ const brand = ref({
 export default function useApi () {
   const { supabase } = useSupabase()
   const { user } = useAuthUser()
-  const route = useRouter
+  const route = useRoute()
   const { setBrand } = useBrand()
   const $q = useQuasar()
 
@@ -43,6 +43,7 @@ export default function useApi () {
     const { data, error, count } = await supabase
       .from(table)
       .select('*', { count: 'exact' })
+      .eq('user_id', userId)
     if (error) throw error
     return {
       data,
@@ -76,10 +77,11 @@ export default function useApi () {
     const { data, error } = await supabase
       .from(table)
       .update({ ...form })
-      .match({ id: form.ids })
+      .match({ id: form.id })
     if (error) throw error
     return data
   }
+
   const remove = async (table, id) => {
     const { data, error } = await supabase
       .from(table)

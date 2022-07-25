@@ -26,16 +26,18 @@
           stack-label
           v-model="paralax"
           type="file"
+          accept="image/*"
         />
 
         <div class="row justify-center q-gutter-md q-pa-md">
           <q-color
             v-model="form.primary"
-            class="col-md-4 col-sm-12 col-xs-12 text-center"
+            class="col-md-4 col-sm-12 col-xs-12"
           />
+
           <q-color
             v-model="form.secondary"
-            class="col-md-4 col-sm-12 col-xs-12 text-center"
+            class="col-md-4 col-sm-12 col-xs-12"
           />
         </div>
 
@@ -115,7 +117,9 @@ export default defineComponent({
     const handleGetConfig = async () => {
       try {
         config = await listPublic(table, user.value.id)
-        form.value = config[0]
+        if (config.length > 0) {
+          form.value = config[0]
+        }
       } catch (error) {
         notifyError(error.message)
       }

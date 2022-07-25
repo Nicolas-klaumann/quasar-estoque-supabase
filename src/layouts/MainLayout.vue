@@ -38,12 +38,25 @@
         />
       </q-list>
     </q-drawer>
-    <q-page-container> <router-view /> </q-page-container>
+
+    <q-page-container>
+      <router-view v-slot="{ Component }">
+        <transition
+          appear
+          enter-active-class="animated fadeInUp"
+          leave-active-class="animated fadeOutDown"
+        >
+          <component :is="Component" />
+        </transition>
+      </router-view>
+    </q-page-container>
   </q-layout>
 </template>
 
 <script>
 import EssentialLink from 'components/EssentialLink.vue'
+import DarkModeToogle from 'components/DarkModeToggle.vue'
+
 const linksList = [
   {
     title: 'Home',
@@ -70,18 +83,24 @@ const linksList = [
     routeName: 'form-config'
   }
 ]
+
 import { defineComponent, ref, onMounted } from 'vue'
 import useAuthUser from 'src/composables/UseAuthUser'
 import useApi from 'src/composables/UseApi'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
+
 export default defineComponent({
   name: 'MainLayout',
+
   components: {
-    EssentialLink
+    EssentialLink,
+    DarkModeToogle
   },
+
   setup () {
     const leftDrawerOpen = ref(false)
+
     const $q = useQuasar()
     const router = useRouter()
     const { logout } = useAuthUser()
@@ -98,12 +117,11 @@ export default defineComponent({
         cancel: true,
         persistent: true
       }).onOk(async () => {
-        $q.loading.show()
         await logout()
         router.replace({ name: 'login' })
-        $q.loading.hide()
       })
     }
+
     return {
       essentialLinks: linksList,
       leftDrawerOpen,

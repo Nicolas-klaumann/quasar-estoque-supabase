@@ -1,6 +1,6 @@
 <template>
   <q-page padding>
-    <div class="row" v-if="brand.row">
+    <div class="row" v-if="brand.name">
       <div class="col-12 text-center text-h4">
         {{ brand.name }}
       </div>
@@ -13,12 +13,14 @@
         label="Category"
         option-label="name"
         option-value="id"
-        map-options="id"
+        map-options
         emit-value
+        clearable
         class="col-12"
         dense
         @update:model-value="handleListProducts(route.params.id)"
       />
+
       <q-table
         :rows="products"
         :columns="columnsProduct"
@@ -31,11 +33,12 @@
         hide-pagination
       >
         <template v-slot:top>
-          <span class="text-h6"> Product </span>
+          <span class="text-h6"> Products </span>
           <q-space />
           <q-input
             outlined
             dense
+            debounce="300"
             v-model="filter"
             placeholder="Search"
             class="q-mr-sm"
@@ -45,31 +48,42 @@
             </template>
           </q-input>
         </template>
-        <template v-slot:item="props">
-          <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
-            <q-card
-              class="cursor-pointer"
-              v-ripple:primary
-              @click="handleShowDetails(props.row)"
-            >
-              <q-img :src="props.row.img_url" :ratio="4 / 3" />
-              <q-card-section class="text-center">
-                <div class="text-h6">{{ props.row.name }}</div>
-                <div class="text-subtitle2">
-                  {{ formatCurrency(props.row.price) }}
-                </div>
-              </q-card-section>
-            </q-card>
-          </div>
-          <div class="col-12" v-if="props.rowIndex === 2 && brand.paralax_url">
-            <q-parallax :height="200" :speed="0.5">
-              <template v-slot:media>
-                <img :src="brand.paralax_url" />
-              </template>
 
-              <h3 class="text-white">Store Name</h3>
-            </q-parallax>
-          </div>
+        <template v-slot:item="props">
+          <transition-group
+            appear
+            enter-active-class="animated fadeInLeft"
+            leave-active-class="animated fadeOutRight"
+          >
+            <div class="q-pa-xs col-xs-12 col-sm-6 col-md-3" key="card">
+              <q-card
+                class="cursor-pointer"
+                v-ripple:primary
+                @click="handleShowDetails(props.row)"
+              >
+                <q-img :src="props.row.img_url" :ratio="4 / 3" />
+                <q-card-section class="text-center">
+                  <div class="text-h6">{{ props.row.name }}</div>
+                  <div class="text-subtitle2">
+                    {{ formatCurrency(props.row.price) }}
+                  </div>
+                </q-card-section>
+              </q-card>
+            </div>
+            <div
+              class="col-12"
+              v-if="props.rowIndex === 3 && brand.paralax_url"
+              key="paralax"
+            >
+              <q-parallax :height="200" :speed="0.5">
+                <template v-slot:media>
+                  <img :src="brand.paralax_url" />
+                </template>
+
+                <h3 class="text-white">{{ brand.name }}</h3>
+              </q-parallax>
+            </div>
+          </transition-group>
         </template>
       </q-table>
     </div>
@@ -90,14 +104,13 @@
 </template>
 
 <script>
-
 import { defineComponent, ref, onMounted, computed } from 'vue'
 import useApi from 'src/composables/UseApi'
 import useNotify from 'src/composables/UseNotify'
 import { useRoute } from 'vue-router'
 import { columnsProduct, initialPagination } from './table'
 import { formatCurrency } from 'src/utils/format'
-import DialogProductDetails from 'components/DialogProductDetails.vue'
+import DialogProductDetails from 'components/DialogProductDetails'
 
 export default defineComponent({
   name: 'PageProductPublic',
@@ -133,7 +146,7 @@ export default defineComponent({
       showDialogDetails.value = true
     }
 
-    const handleListCategories = async (userId) => {
+    const hadleListCategories = async (userId) => {
       optionsCategories.value = await listPublic('category', userId)
     }
 
@@ -143,8 +156,7 @@ export default defineComponent({
 
     onMounted(() => {
       if (route.params.id) {
-        console.log('entrou')
-        handleListCategories(route.params.id)
+        hadleListCategories(route.params.id)
         handleListProducts(route.params.id)
       }
     })

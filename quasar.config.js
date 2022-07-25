@@ -123,7 +123,8 @@ module.exports = configure(function (ctx) {
       plugins: [
         'Dialog',
         'Notify',
-        'Loading'
+        'Loading',
+        'LocalStorage'
       ]
     },
 
@@ -176,6 +177,7 @@ module.exports = configure(function (ctx) {
         orientation: 'portrait',
         background_color: '#ffffff',
         theme_color: '#027be3',
+        categories: ['utilities', 'productivity', 'personalization'],
         icons: [
           {
             src: 'icons/icon-128x128.png',
